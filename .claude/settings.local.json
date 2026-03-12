@@ -1,0 +1,15 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(npx create-next-app@latest . --typescript --tailwind --eslint --app --src-dir --import-alias @/* --use-npm --no-turbopack)",
+      "Read(//c/Users/Admin/**)",
+      "Bash(npx create-next-app@latest wiki-contributor-os --typescript --tailwind --eslint --app --src-dir --import-alias \"@/*\" --use-npm --no-turbopack)",
+      "Bash(rm -rf /c/Users/Admin/wiki-contributor-os)",
+      "Bash(printf non:*)",
+      "Bash(npm install:*)",
+      "Bash(npx shadcn@latest init -d --base-color neutral --css-variables)",
+      "Bash(npx shadcn@latest init -d)"
+    ]
+  }
+}

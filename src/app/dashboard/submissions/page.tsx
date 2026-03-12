@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { QA_SCORE_LABELS, QUALITY_MULTIPLIER } from '@/lib/constants'
 import type { Submission } from '@/types'
@@ -36,54 +35,52 @@ export default function SubmissionsPage() {
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Lịch sử nộp bài</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">Lịch sử nộp bài</h1>
 
       {loading ? (
-        <p className="text-gray-500">Đang tải...</p>
+        <p className="text-white/50">Đang tải...</p>
       ) : submissions.length === 0 ? (
-        <p className="text-gray-500">Chưa có bài nộp nào</p>
+        <p className="text-white/50">Chưa có bài nộp nào</p>
       ) : (
         <div className="space-y-3">
           {submissions.map((sub) => (
-            <Card key={sub.id}>
-              <CardContent className="pt-4">
-                <div className="flex items-start justify-between">
-                  <div>
-                    <p className="font-medium">
-                      {(sub.task as unknown as { title: string })?.title ?? 'Task'}
-                    </p>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Nộp lúc: {new Date(sub.created_at).toLocaleString('vi-VN')}
-                      {sub.revision_count > 0 && ` · Sửa ${sub.revision_count} lần`}
-                    </p>
-                    {sub.content_link && (
-                      <a
-                        href={sub.content_link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="text-sm text-blue-600 hover:underline flex items-center gap-1 mt-1"
-                      >
-                        <ExternalLink className="h-3 w-3" /> Xem bài
-                      </a>
-                    )}
-                  </div>
-                  <div className="text-right">
-                    {sub.qa_score ? (
-                      <Badge variant={sub.qa_score === 'reject' ? 'destructive' : 'secondary'}>
-                        {QA_SCORE_LABELS[sub.qa_score]} (x{QUALITY_MULTIPLIER[sub.qa_score]})
-                      </Badge>
-                    ) : (
-                      <Badge variant="outline">Chờ QA</Badge>
-                    )}
-                  </div>
-                </div>
-                {sub.qa_notes && (
-                  <p className="mt-2 text-sm text-gray-600 bg-gray-50 rounded p-2">
-                    QA: {sub.qa_notes}
+            <div key={sub.id} className="glass-card p-5">
+              <div className="flex items-start justify-between">
+                <div>
+                  <p className="font-medium text-white">
+                    {(sub.task as unknown as { title: string })?.title ?? 'Task'}
                   </p>
-                )}
-              </CardContent>
-            </Card>
+                  <p className="text-xs text-white/40 mt-1">
+                    Nộp lúc: {new Date(sub.created_at).toLocaleString('vi-VN')}
+                    {sub.revision_count > 0 && ` · Sửa ${sub.revision_count} lần`}
+                  </p>
+                  {sub.content_link && (
+                    <a
+                      href={sub.content_link}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-sm text-violet-400 hover:text-violet-300 flex items-center gap-1 mt-1 transition-colors"
+                    >
+                      <ExternalLink className="h-3 w-3" /> Xem bài
+                    </a>
+                  )}
+                </div>
+                <div className="text-right">
+                  {sub.qa_score ? (
+                    <Badge className={sub.qa_score === 'reject' ? 'bg-red-500/20 text-red-300' : 'bg-violet-500/20 text-violet-300'}>
+                      {QA_SCORE_LABELS[sub.qa_score]} (x{QUALITY_MULTIPLIER[sub.qa_score]})
+                    </Badge>
+                  ) : (
+                    <Badge className="bg-white/10 text-white/60 border border-white/20">Chờ QA</Badge>
+                  )}
+                </div>
+              </div>
+              {sub.qa_notes && (
+                <p className="mt-3 text-sm text-white/60 bg-white/5 rounded-lg p-3">
+                  QA: {sub.qa_notes}
+                </p>
+              )}
+            </div>
           ))}
         </div>
       )}

@@ -3,10 +3,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
-import { Button } from '@/components/ui/button'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
 import { toast } from 'sonner'
 import { ROLE_LABELS, LEVEL_LABELS } from '@/lib/constants'
 import type { Profile, UserRole, UserLevel } from '@/types'
@@ -48,55 +44,51 @@ export default function AdminUsersPage() {
   }
 
   if (!profile || profile.role !== 'admin') {
-    return <p className="text-gray-500">Bạn không có quyền truy cập.</p>
+    return <p className="text-white/50">Bạn không có quyền truy cập.</p>
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Quản lý cộng tác viên</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">Quản lý cộng tác viên</h1>
 
       {loading ? (
-        <p className="text-gray-500">Đang tải...</p>
+        <p className="text-white/50">Đang tải...</p>
       ) : (
         <div className="space-y-3">
           {users.map((u) => (
-            <Card key={u.id}>
-              <CardContent className="pt-4">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="font-medium">{u.name}</p>
-                    <p className="text-sm text-gray-500">{u.email}</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      <span className="text-sm">{u.total_points} điểm</span>
-                      <span className="text-sm">· QA: {u.qa_score}%</span>
-                      <span className="text-sm">· Ví: {u.wallet_balance.toLocaleString()}đ</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Select value={u.role} onValueChange={(v) => updateRole(u.id, v as UserRole)}>
-                      <SelectTrigger className="w-[130px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(ROLE_LABELS).map(([k, v]) => (
-                          <SelectItem key={k} value={k}>{v}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
-                    <Select value={u.level} onValueChange={(v) => updateLevel(u.id, v as UserLevel)}>
-                      <SelectTrigger className="w-[120px]">
-                        <SelectValue />
-                      </SelectTrigger>
-                      <SelectContent>
-                        {Object.entries(LEVEL_LABELS).map(([k, v]) => (
-                          <SelectItem key={k} value={k}>{v}</SelectItem>
-                        ))}
-                      </SelectContent>
-                    </Select>
+            <div key={u.id} className="glass-card p-5">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="font-medium text-white">{u.name}</p>
+                  <p className="text-sm text-white/40">{u.email}</p>
+                  <div className="flex items-center gap-2 mt-1 text-sm text-white/50">
+                    <span>{u.total_points} điểm</span>
+                    <span>· QA: {u.qa_score}%</span>
+                    <span>· Ví: {u.wallet_balance.toLocaleString()}đ</span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
+                <div className="flex items-center gap-2">
+                  <select
+                    value={u.role}
+                    onChange={(e) => updateRole(u.id, e.target.value as UserRole)}
+                    className="rounded-lg px-3 py-1.5 text-sm glass-input"
+                  >
+                    {Object.entries(ROLE_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </select>
+                  <select
+                    value={u.level}
+                    onChange={(e) => updateLevel(u.id, e.target.value as UserLevel)}
+                    className="rounded-lg px-3 py-1.5 text-sm glass-input"
+                  >
+                    {Object.entries(LEVEL_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>{v}</option>
+                    ))}
+                  </select>
+                </div>
+              </div>
+            </div>
           ))}
         </div>
       )}

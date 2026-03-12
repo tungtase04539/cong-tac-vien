@@ -48,10 +48,10 @@ export function Sidebar({ userRole }: SidebarProps) {
   const adminItems = visibleItems.filter(i => i.roles?.includes('admin'))
 
   return (
-    <aside className="w-64 bg-white border-r min-h-screen p-4 flex flex-col">
+    <aside className="w-64 bg-white/5 backdrop-blur-2xl border-r border-white/10 min-h-screen p-4 flex flex-col relative z-10">
       <div className="mb-8">
-        <h1 className="text-xl font-bold text-gray-900">Wiki CTV OS</h1>
-        <p className="text-xs text-gray-500 mt-1">{ROLE_LABELS[userRole]}</p>
+        <h1 className="text-xl font-bold gradient-text">Wiki CTV OS</h1>
+        <p className="text-xs text-white/50 mt-1">{ROLE_LABELS[userRole]}</p>
       </div>
 
       <nav className="flex-1 space-y-1">
@@ -62,13 +62,13 @@ export function Sidebar({ userRole }: SidebarProps) {
               key={item.href}
               href={item.href}
               className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                 isActive
-                  ? 'bg-gray-100 text-gray-900'
-                  : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                  ? 'bg-white/15 text-white shadow-lg shadow-violet-500/10'
+                  : 'text-white/60 hover:bg-white/10 hover:text-white'
               )}
             >
-              <item.icon className="h-4 w-4" />
+              <item.icon className={cn('h-4 w-4', isActive && 'text-violet-400')} />
               {item.label}
             </Link>
           )
@@ -77,7 +77,7 @@ export function Sidebar({ userRole }: SidebarProps) {
         {adminItems.length > 0 && (
           <>
             <div className="pt-4 pb-2">
-              <p className="px-3 text-xs font-semibold text-gray-400 uppercase">Admin</p>
+              <p className="px-3 text-xs font-semibold text-white/30 uppercase tracking-wider">Admin</p>
             </div>
             {adminItems.map((item) => {
               const isActive = pathname === item.href
@@ -86,13 +86,13 @@ export function Sidebar({ userRole }: SidebarProps) {
                   key={item.href}
                   href={item.href}
                   className={cn(
-                    'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+                    'flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-200',
                     isActive
-                      ? 'bg-gray-100 text-gray-900'
-                      : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                      ? 'bg-white/15 text-white shadow-lg shadow-violet-500/10'
+                      : 'text-white/60 hover:bg-white/10 hover:text-white'
                   )}
                 >
-                  <item.icon className="h-4 w-4" />
+                  <item.icon className={cn('h-4 w-4', isActive && 'text-violet-400')} />
                   {item.label}
                 </Link>
               )

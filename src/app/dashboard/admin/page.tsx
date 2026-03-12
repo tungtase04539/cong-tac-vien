@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { PRICE_PER_POINT } from '@/lib/constants'
 import {
   ClipboardList, FileCheck, Shield, CheckCircle,
@@ -59,39 +58,37 @@ export default function AdminDashboardPage() {
   }, [])
 
   if (!profile || profile.role !== 'admin') {
-    return <p className="text-gray-500">Bạn không có quyền truy cập.</p>
+    return <p className="text-white/50">Bạn không có quyền truy cập.</p>
   }
 
-  if (loading || !stats) return <p className="text-gray-500">Đang tải...</p>
+  if (loading || !stats) return <p className="text-white/50">Đang tải...</p>
 
   const cards = [
-    { title: 'Tổng task', value: stats.totalTasks, icon: ClipboardList, color: 'text-gray-600' },
-    { title: 'Task mới', value: stats.newTasks, icon: FileCheck, color: 'text-blue-600' },
-    { title: 'Đang xử lý', value: stats.inProgress, icon: TrendingUp, color: 'text-orange-600' },
-    { title: 'Chờ QA', value: stats.waitingQA, icon: Shield, color: 'text-purple-600' },
-    { title: 'Đã duyệt', value: stats.approved, icon: CheckCircle, color: 'text-green-600' },
-    { title: 'Đã xuất bản', value: stats.published, icon: BookOpen, color: 'text-emerald-600' },
-    { title: 'Cộng tác viên', value: stats.totalContributors, icon: Users, color: 'text-indigo-600' },
-    { title: 'Chi phí ước tính', value: `${(stats.totalPoints * PRICE_PER_POINT).toLocaleString()}đ`, icon: DollarSign, color: 'text-red-600' },
+    { title: 'Tổng task', value: stats.totalTasks, icon: ClipboardList, color: 'text-gray-300', bg: 'from-gray-500/20 to-gray-600/10' },
+    { title: 'Task mới', value: stats.newTasks, icon: FileCheck, color: 'text-blue-400', bg: 'from-blue-500/20 to-blue-600/10' },
+    { title: 'Đang xử lý', value: stats.inProgress, icon: TrendingUp, color: 'text-orange-400', bg: 'from-orange-500/20 to-orange-600/10' },
+    { title: 'Chờ QA', value: stats.waitingQA, icon: Shield, color: 'text-purple-400', bg: 'from-purple-500/20 to-purple-600/10' },
+    { title: 'Đã duyệt', value: stats.approved, icon: CheckCircle, color: 'text-green-400', bg: 'from-green-500/20 to-green-600/10' },
+    { title: 'Đã xuất bản', value: stats.published, icon: BookOpen, color: 'text-emerald-400', bg: 'from-emerald-500/20 to-emerald-600/10' },
+    { title: 'Cộng tác viên', value: stats.totalContributors, icon: Users, color: 'text-indigo-400', bg: 'from-indigo-500/20 to-indigo-600/10' },
+    { title: 'Chi phí ước tính', value: `${(stats.totalPoints * PRICE_PER_POINT).toLocaleString()}đ`, icon: DollarSign, color: 'text-red-400', bg: 'from-red-500/20 to-red-600/10' },
   ]
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">Admin Dashboard</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">Admin Dashboard</h1>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
         {cards.map((card) => (
-          <Card key={card.title}>
-            <CardHeader className="flex flex-row items-center justify-between pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">
-                {card.title}
-              </CardTitle>
-              <card.icon className={`h-5 w-5 ${card.color}`} />
-            </CardHeader>
-            <CardContent>
-              <p className="text-2xl font-bold">{card.value}</p>
-            </CardContent>
-          </Card>
+          <div key={card.title} className="glass-card glass-card-hover p-5 transition-all duration-300">
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-sm font-medium text-white/60">{card.title}</p>
+              <div className={`p-2 rounded-lg bg-gradient-to-br ${card.bg}`}>
+                <card.icon className={`h-5 w-5 ${card.color}`} />
+              </div>
+            </div>
+            <p className="text-2xl font-bold text-white">{card.value}</p>
+          </div>
         ))}
       </div>
     </div>

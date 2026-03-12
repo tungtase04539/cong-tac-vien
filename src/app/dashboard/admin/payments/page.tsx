@@ -3,11 +3,9 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
 import { Badge } from '@/components/ui/badge'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
-import { Label } from '@/components/ui/label'
 import { toast } from 'sonner'
 import { PRICE_PER_POINT, LEVEL_MULTIPLIER } from '@/lib/constants'
 import type { Profile, Payment } from '@/types'
@@ -46,7 +44,6 @@ export default function AdminPaymentsPage() {
     for (const contrib of contributors) {
       const amount = contrib.total_points * PRICE_PER_POINT * LEVEL_MULTIPLIER[contrib.level]
 
-      // Check if payment already exists
       const { data: existing } = await supabase
         .from('payments')
         .select('id')
@@ -104,7 +101,7 @@ export default function AdminPaymentsPage() {
   }
 
   if (!profile || profile.role !== 'admin') {
-    return <p className="text-gray-500">Bạn không có quyền truy cập.</p>
+    return <p className="text-white/50">Bạn không có quyền truy cập.</p>
   }
 
   const totalAmount = payments.reduce((sum, p) => sum + p.amount, 0)
@@ -112,70 +109,66 @@ export default function AdminPaymentsPage() {
   return (
     <div>
       <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold">Quản lý thanh toán</h1>
+        <h1 className="text-2xl font-bold text-white">Quản lý thanh toán</h1>
         <div className="flex items-center gap-2">
           <Input
             type="month"
             value={month}
             onChange={(e) => setMonth(e.target.value)}
-            className="w-[180px]"
+            className="w-[180px] glass-input"
           />
-          <Button onClick={calculatePayments} disabled={calculating}>
+          <Button onClick={calculatePayments} disabled={calculating} className="gradient-btn">
             <Calculator className="h-4 w-4 mr-1" />
             {calculating ? 'Đang tính...' : 'Tính lương'}
           </Button>
-          <Button variant="outline" onClick={exportCSV} disabled={payments.length === 0}>
-            <Download className="h-4 w-4 mr-1" /> Export CSV
+          <Button variant="outline" onClick={exportCSV} disabled={payments.length === 0} className="border-white/20 text-white hover:bg-white/10">
+            <Download className="h-4 w-4 mr-1" /> Export
           </Button>
         </div>
       </div>
 
-      <Card className="mb-6">
-        <CardContent className="pt-4">
-          <div className="flex items-center justify-between">
-            <div>
-              <p className="text-sm text-gray-500">Tổng chi tháng {month}</p>
-              <p className="text-2xl font-bold">{totalAmount.toLocaleString()}đ</p>
-            </div>
-            <div>
-              <p className="text-sm text-gray-500">Số CTV</p>
-              <p className="text-2xl font-bold">{payments.length}</p>
-            </div>
+      <div className="glass-card p-5 mb-6">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm text-white/50">Tổng chi tháng {month}</p>
+            <p className="text-2xl font-bold text-white">{totalAmount.toLocaleString()}đ</p>
           </div>
-        </CardContent>
-      </Card>
+          <div>
+            <p className="text-sm text-white/50">Số CTV</p>
+            <p className="text-2xl font-bold text-white">{payments.length}</p>
+          </div>
+        </div>
+      </div>
 
       {loading ? (
-        <p className="text-gray-500">Đang tải...</p>
+        <p className="text-white/50">Đang tải...</p>
       ) : payments.length === 0 ? (
-        <p className="text-gray-500">Chưa có dữ liệu thanh toán cho tháng này. Nhấn "Tính lương" để tạo.</p>
+        <p className="text-white/50">Chưa có dữ liệu thanh toán cho tháng này. Nhấn &quot;Tính lương&quot; để tạo.</p>
       ) : (
         <div className="space-y-3">
           {payments.map((p) => {
             const user = p.user as unknown as { name: string; email: string }
             return (
-              <Card key={p.id}>
-                <CardContent className="pt-4">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <p className="font-medium">{user?.name}</p>
-                      <p className="text-sm text-gray-500">
-                        {user?.email} · {p.points} điểm · x{p.quality_multiplier}
-                      </p>
-                    </div>
-                    <div className="flex items-center gap-3">
-                      <p className="font-bold text-lg">{p.amount.toLocaleString()}đ</p>
-                      {p.status === 'paid' ? (
-                        <Badge className="bg-green-100 text-green-800">Đã TT</Badge>
-                      ) : (
-                        <Button size="sm" variant="outline" onClick={() => markPaid(p.id)}>
-                          <CheckCircle className="h-4 w-4 mr-1" /> Thanh toán
-                        </Button>
-                      )}
-                    </div>
+              <div key={p.id} className="glass-card p-5">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="font-medium text-white">{user?.name}</p>
+                    <p className="text-sm text-white/50">
+                      {user?.email} · {p.points} điểm · x{p.quality_multiplier}
+                    </p>
                   </div>
-                </CardContent>
-              </Card>
+                  <div className="flex items-center gap-3">
+                    <p className="font-bold text-lg text-white">{p.amount.toLocaleString()}đ</p>
+                    {p.status === 'paid' ? (
+                      <Badge className="bg-green-500/20 text-green-300">Đã TT</Badge>
+                    ) : (
+                      <Button size="sm" onClick={() => markPaid(p.id)} className="bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30">
+                        <CheckCircle className="h-4 w-4 mr-1" /> Thanh toán
+                      </Button>
+                    )}
+                  </div>
+                </div>
+              </div>
             )
           })}
         </div>

@@ -73,16 +73,16 @@ export const STATUS_LABELS: Record<string, string> = {
 }
 
 export const STATUS_COLORS: Record<string, string> = {
-  new: 'bg-blue-100 text-blue-800',
-  claimed: 'bg-yellow-100 text-yellow-800',
-  in_progress: 'bg-orange-100 text-orange-800',
-  submitted: 'bg-purple-100 text-purple-800',
-  qa_review: 'bg-indigo-100 text-indigo-800',
-  revision_required: 'bg-red-100 text-red-800',
-  approved: 'bg-green-100 text-green-800',
-  published: 'bg-emerald-100 text-emerald-800',
-  rejected: 'bg-red-200 text-red-900',
-  paid: 'bg-gray-100 text-gray-800',
+  new: 'bg-blue-500/20 text-blue-300',
+  claimed: 'bg-yellow-500/20 text-yellow-300',
+  in_progress: 'bg-orange-500/20 text-orange-300',
+  submitted: 'bg-purple-500/20 text-purple-300',
+  qa_review: 'bg-indigo-500/20 text-indigo-300',
+  revision_required: 'bg-red-500/20 text-red-300',
+  approved: 'bg-green-500/20 text-green-300',
+  published: 'bg-emerald-500/20 text-emerald-300',
+  rejected: 'bg-red-500/30 text-red-300',
+  paid: 'bg-gray-500/20 text-gray-300',
 }
 
 export const DIFFICULTY_LABELS: Record<TaskDifficulty, string> = {
@@ -93,10 +93,10 @@ export const DIFFICULTY_LABELS: Record<TaskDifficulty, string> = {
 }
 
 export const DIFFICULTY_COLORS: Record<TaskDifficulty, string> = {
-  short: 'bg-green-100 text-green-800',
-  medium: 'bg-blue-100 text-blue-800',
-  long: 'bg-orange-100 text-orange-800',
-  complex: 'bg-red-100 text-red-800',
+  short: 'bg-green-500/20 text-green-300',
+  medium: 'bg-blue-500/20 text-blue-300',
+  long: 'bg-orange-500/20 text-orange-300',
+  complex: 'bg-red-500/20 text-red-300',
 }
 
 export const QA_SCORE_LABELS: Record<QAScore, string> = {

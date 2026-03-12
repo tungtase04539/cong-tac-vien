@@ -3,7 +3,6 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
-import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
@@ -98,17 +97,17 @@ export default function QAPage() {
   }
 
   if (!profile || !['qa', 'admin'].includes(profile.role)) {
-    return <p className="text-gray-500">Bạn không có quyền truy cập trang này.</p>
+    return <p className="text-white/50">Bạn không có quyền truy cập trang này.</p>
   }
 
   return (
     <div>
-      <h1 className="text-2xl font-bold mb-6">QA Review Panel</h1>
+      <h1 className="text-2xl font-bold text-white mb-6">QA Review Panel</h1>
 
       {loading ? (
-        <p className="text-gray-500">Đang tải...</p>
+        <p className="text-white/50">Đang tải...</p>
       ) : submissions.length === 0 ? (
-        <p className="text-gray-500">Không có bài nào cần review</p>
+        <p className="text-white/50">Không có bài nào cần review</p>
       ) : (
         <div className="space-y-4">
           {submissions.map((sub) => {
@@ -116,105 +115,102 @@ export default function QAPage() {
             const user = sub.user as unknown as { name: string }
             const isReviewing = reviewingId === sub.id
             return (
-              <Card key={sub.id}>
-                <CardContent className="pt-4">
-                  <div className="flex items-start justify-between">
-                    <div>
-                      <p className="font-medium">{task?.title}</p>
-                      <p className="text-sm text-gray-500 mt-1">
-                        CTV: {user?.name} · {DIFFICULTY_LABELS[task?.difficulty]} · +{task?.points} điểm
-                      </p>
-                      {sub.content_link && (
-                        <a
-                          href={sub.content_link}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-sm text-blue-600 hover:underline flex items-center gap-1 mt-1"
-                        >
-                          <ExternalLink className="h-3 w-3" /> Xem bài nộp
-                        </a>
-                      )}
-                      {sub.notes && (
-                        <p className="text-sm text-gray-600 mt-1">Ghi chú: {sub.notes}</p>
-                      )}
-                    </div>
-
-                    {!isReviewing && (
-                      <Button size="sm" onClick={() => {
-                        setReviewingId(sub.id)
-                        setQaScore('good')
-                        setQaNotes('')
-                      }}>
-                        Review
-                      </Button>
+              <div key={sub.id} className="glass-card p-5">
+                <div className="flex items-start justify-between">
+                  <div>
+                    <p className="font-medium text-white">{task?.title}</p>
+                    <p className="text-sm text-white/50 mt-1">
+                      CTV: {user?.name} · {DIFFICULTY_LABELS[task?.difficulty]} · +{task?.points} điểm
+                    </p>
+                    {sub.content_link && (
+                      <a
+                        href={sub.content_link}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-sm text-violet-400 hover:text-violet-300 flex items-center gap-1 mt-1 transition-colors"
+                      >
+                        <ExternalLink className="h-3 w-3" /> Xem bài nộp
+                      </a>
+                    )}
+                    {sub.notes && (
+                      <p className="text-sm text-white/50 mt-1">Ghi chú: {sub.notes}</p>
                     )}
                   </div>
 
-                  {isReviewing && (
-                    <div className="mt-4 border-t pt-4 space-y-3">
-                      <div className="flex items-center justify-between">
-                        <p className="font-medium text-sm">Review: {task?.title}</p>
-                        <button
-                          className="text-gray-400 hover:text-gray-600 text-lg"
-                          onClick={() => setReviewingId(null)}
-                        >
-                          ×
-                        </button>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Đánh giá chất lượng</Label>
-                        <select
-                          className="w-full border rounded-md px-3 py-2 text-sm"
-                          value={qaScore}
-                          onChange={(e) => setQaScore(e.target.value as QAScore)}
-                        >
-                          {Object.entries(QA_SCORE_LABELS).map(([key, label]) => (
-                            <option key={key} value={key}>
-                              {label} (x{QUALITY_MULTIPLIER[key as QAScore]})
-                            </option>
-                          ))}
-                        </select>
-                      </div>
-                      <div className="space-y-2">
-                        <Label>Ghi chú QA</Label>
-                        <Textarea
-                          value={qaNotes}
-                          onChange={(e) => setQaNotes(e.target.value)}
-                          placeholder="Nhận xét về chất lượng bài..."
-                        />
-                      </div>
-                      <div className="flex gap-2">
-                        <Button
-                          onClick={() => handleReview(sub, 'approve')}
-                          disabled={saving}
-                          className="flex-1"
-                          size="sm"
-                        >
-                          <CheckCircle className="h-4 w-4 mr-1" /> Duyệt
-                        </Button>
-                        <Button
-                          variant="outline"
-                          onClick={() => handleReview(sub, 'revision')}
-                          disabled={saving}
-                          className="flex-1"
-                          size="sm"
-                        >
-                          <RotateCcw className="h-4 w-4 mr-1" /> Sửa lại
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          onClick={() => handleReview(sub, 'reject')}
-                          disabled={saving}
-                          className="flex-1"
-                          size="sm"
-                        >
-                          <XCircle className="h-4 w-4 mr-1" /> Từ chối
-                        </Button>
-                      </div>
-                    </div>
+                  {!isReviewing && (
+                    <Button size="sm" onClick={() => {
+                      setReviewingId(sub.id)
+                      setQaScore('good')
+                      setQaNotes('')
+                    }} className="gradient-btn">
+                      Review
+                    </Button>
                   )}
-                </CardContent>
-              </Card>
+                </div>
+
+                {isReviewing && (
+                  <div className="mt-4 border-t border-white/10 pt-4 space-y-3">
+                    <div className="flex items-center justify-between">
+                      <p className="font-medium text-sm text-white">Review: {task?.title}</p>
+                      <button
+                        className="text-white/40 hover:text-white text-lg transition-colors"
+                        onClick={() => setReviewingId(null)}
+                      >
+                        ×
+                      </button>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white/80">Đánh giá chất lượng</Label>
+                      <select
+                        className="w-full rounded-lg px-3 py-2 text-sm glass-input"
+                        value={qaScore}
+                        onChange={(e) => setQaScore(e.target.value as QAScore)}
+                      >
+                        {Object.entries(QA_SCORE_LABELS).map(([key, label]) => (
+                          <option key={key} value={key}>
+                            {label} (x{QUALITY_MULTIPLIER[key as QAScore]})
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div className="space-y-2">
+                      <Label className="text-white/80">Ghi chú QA</Label>
+                      <Textarea
+                        value={qaNotes}
+                        onChange={(e) => setQaNotes(e.target.value)}
+                        placeholder="Nhận xét về chất lượng bài..."
+                        className="glass-input"
+                      />
+                    </div>
+                    <div className="flex gap-2">
+                      <Button
+                        onClick={() => handleReview(sub, 'approve')}
+                        disabled={saving}
+                        className="flex-1 bg-green-500/20 text-green-300 hover:bg-green-500/30 border border-green-500/30"
+                        size="sm"
+                      >
+                        <CheckCircle className="h-4 w-4 mr-1" /> Duyệt
+                      </Button>
+                      <Button
+                        onClick={() => handleReview(sub, 'revision')}
+                        disabled={saving}
+                        className="flex-1 bg-yellow-500/20 text-yellow-300 hover:bg-yellow-500/30 border border-yellow-500/30"
+                        size="sm"
+                      >
+                        <RotateCcw className="h-4 w-4 mr-1" /> Sửa lại
+                      </Button>
+                      <Button
+                        onClick={() => handleReview(sub, 'reject')}
+                        disabled={saving}
+                        className="flex-1 bg-red-500/20 text-red-300 hover:bg-red-500/30 border border-red-500/30"
+                        size="sm"
+                      >
+                        <XCircle className="h-4 w-4 mr-1" /> Từ chối
+                      </Button>
+                    </div>
+                  </div>
+                )}
+              </div>
             )
           })}
         </div>

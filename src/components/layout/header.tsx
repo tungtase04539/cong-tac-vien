@@ -22,34 +22,34 @@ export function Header() {
   }
 
   return (
-    <header className="h-14 border-b bg-white flex items-center justify-between px-6">
+    <header className="h-14 border-b border-white/10 bg-white/5 backdrop-blur-xl flex items-center justify-between px-6">
       <div />
       <div className="flex items-center gap-4">
         {profile && (
           <>
             <div className="text-right hidden sm:block">
-              <p className="text-sm font-medium">{profile.name}</p>
-              <p className="text-xs text-gray-500">
+              <p className="text-sm font-medium text-white">{profile.name}</p>
+              <p className="text-xs text-white/50">
                 {LEVEL_LABELS[profile.level]} · {profile.total_points} điểm
               </p>
             </div>
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div role="button" tabIndex={0} className="relative h-8 w-8 rounded-full cursor-pointer">
-                  <Avatar className="h-8 w-8">
-                    <AvatarFallback>
+                <div role="button" tabIndex={0} className="relative h-9 w-9 rounded-full cursor-pointer ring-2 ring-violet-500/50 hover:ring-violet-400 transition-all">
+                  <Avatar className="h-9 w-9">
+                    <AvatarFallback className="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold">
                       {profile.name.charAt(0).toUpperCase()}
                     </AvatarFallback>
                   </Avatar>
                 </div>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end">
-                <DropdownMenuItem onClick={() => router.push('/dashboard/profile')}>
+              <DropdownMenuContent align="end" className="glass-card border-white/20">
+                <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="text-white/80 hover:text-white focus:text-white focus:bg-white/10">
                   <User className="mr-2 h-4 w-4" />
                   Hồ sơ
                 </DropdownMenuItem>
-                <DropdownMenuSeparator />
-                <DropdownMenuItem onClick={handleSignOut}>
+                <DropdownMenuSeparator className="bg-white/10" />
+                <DropdownMenuItem onClick={handleSignOut} className="text-white/80 hover:text-white focus:text-white focus:bg-white/10">
                   <LogOut className="mr-2 h-4 w-4" />
                   Đăng xuất
                 </DropdownMenuItem>

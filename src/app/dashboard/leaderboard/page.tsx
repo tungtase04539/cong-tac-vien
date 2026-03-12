@@ -1,38 +1,38 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ROLE_LABELS, LEVEL_LABELS } from '@/lib/constants'
 import type { Profile } from '@/types'
 import { Trophy, Medal, Award } from 'lucide-react'
+
+const supabase = createClient()
 
 export default function LeaderboardPage() {
   const [topPoints, setTopPoints] = useState<Profile[]>([])
   const [topQA, setTopQA] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
   const [activeTab, setActiveTab] = useState<'points' | 'qa'>('points')
-  const supabase = createClient()
 
-  useEffect(() => {
-    async function load() {
-      const [pointsRes, qaRes] = await Promise.all([
-        supabase.from('profiles').select('*')
-          .neq('role', 'admin')
-          .order('total_points', { ascending: false })
-          .limit(20),
-        supabase.from('profiles').select('*')
-          .neq('role', 'admin')
-          .order('qa_score', { ascending: false })
-          .limit(20),
-      ])
+  const load = useCallback(async () => {
+    const [pointsRes, qaRes] = await Promise.all([
+      supabase.from('profiles').select('*')
+        .neq('role', 'admin')
+        .order('total_points', { ascending: false })
+        .limit(20),
+      supabase.from('profiles').select('*')
+        .neq('role', 'admin')
+        .order('qa_score', { ascending: false })
+        .limit(20),
+    ])
 
-      setTopPoints(pointsRes.data ?? [])
-      setTopQA(qaRes.data ?? [])
-      setLoading(false)
-    }
-
-    load()
+    setTopPoints(pointsRes.data ?? [])
+    setTopQA(qaRes.data ?? [])
+    setLoading(false)
   }, [])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { load() }, [load])
 
   const rankIcon = (index: number) => {
     if (index === 0) return <Trophy className="h-5 w-5 text-yellow-400 drop-shadow-[0_0_6px_rgba(250,204,21,0.5)]" />

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
@@ -8,28 +8,28 @@ import { QA_SCORE_LABELS, QUALITY_MULTIPLIER } from '@/lib/constants'
 import type { Submission } from '@/types'
 import { ExternalLink } from 'lucide-react'
 
+const supabase = createClient()
+
 export default function SubmissionsPage() {
   const { profile } = useAuth()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
-  useEffect(() => {
+  const loadSubmissions = useCallback(async () => {
     if (!profile) return
 
-    async function load() {
-      const { data } = await supabase
-        .from('submissions')
-        .select('*, task:tasks(title, difficulty, points)')
-        .eq('user_id', profile!.id)
-        .order('created_at', { ascending: false })
+    const { data } = await supabase
+      .from('submissions')
+      .select('*, task:tasks(title, difficulty, points)')
+      .eq('user_id', profile.id)
+      .order('created_at', { ascending: false })
 
-      setSubmissions(data ?? [])
-      setLoading(false)
-    }
-
-    load()
+    setSubmissions(data ?? [])
+    setLoading(false)
   }, [profile])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadSubmissions() }, [loadSubmissions])
 
   if (!profile) return null
 

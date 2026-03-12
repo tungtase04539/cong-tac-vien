@@ -36,11 +36,10 @@ export default function MyTasksPage() {
 
     setTasks(data ?? [])
     setLoading(false)
-  }, [profile?.id])
+  }, [profile])
 
-  useEffect(() => {
-    loadTasks()
-  }, [loadTasks])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadTasks() }, [loadTasks])
 
   async function handleSubmit(taskId: string) {
     if (!profile || !contentLink.trim()) return

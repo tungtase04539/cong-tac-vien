@@ -9,7 +9,9 @@
       "Bash(printf non:*)",
       "Bash(npm install:*)",
       "Bash(npx shadcn@latest init -d --base-color neutral --css-variables)",
-      "Bash(npx shadcn@latest init -d)"
+      "Bash(npx shadcn@latest init -d)",
+      "Bash(npx shadcn@latest add card input label select textarea badge table tabs dialog dropdown-menu avatar separator sheet toast sonner)",
+      "Bash(npx shadcn@latest add card input label select textarea badge table tabs dialog dropdown-menu avatar separator sheet sonner)"
     ]
   }
 }

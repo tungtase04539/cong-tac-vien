@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
@@ -10,6 +10,8 @@ import { toast } from 'sonner'
 import { PRICE_PER_POINT, LEVEL_MULTIPLIER } from '@/lib/constants'
 import type { Profile, Payment } from '@/types'
 import { Calculator, Download, CheckCircle } from 'lucide-react'
+
+const supabase = createClient()
 
 export default function AdminPaymentsPage() {
   const { profile } = useAuth()
@@ -21,9 +23,8 @@ export default function AdminPaymentsPage() {
   })
   const [loading, setLoading] = useState(true)
   const [calculating, setCalculating] = useState(false)
-  const supabase = createClient()
 
-  async function loadData() {
+  const loadData = useCallback(async () => {
     const [contribRes, payRes] = await Promise.all([
       supabase.from('profiles').select('*').neq('role', 'admin').gt('total_points', 0),
       supabase.from('payments').select('*, user:profiles!payments_user_id_fkey(name, email)')
@@ -34,9 +35,10 @@ export default function AdminPaymentsPage() {
     setContributors(contribRes.data ?? [])
     setPayments(payRes.data ?? [])
     setLoading(false)
-  }
+  }, [month])
 
-  useEffect(() => { loadData() }, [month])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadData() }, [loadData])
 
   async function calculatePayments() {
     setCalculating(true)

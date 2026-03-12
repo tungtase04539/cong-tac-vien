@@ -1,19 +1,20 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { toast } from 'sonner'
 import { ROLE_LABELS, LEVEL_LABELS } from '@/lib/constants'
 import type { Profile, UserRole, UserLevel } from '@/types'
 
+const supabase = createClient()
+
 export default function AdminUsersPage() {
   const { profile } = useAuth()
   const [users, setUsers] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
-  async function loadUsers() {
+  const loadUsers = useCallback(async () => {
     const { data } = await supabase
       .from('profiles')
       .select('*')
@@ -21,9 +22,10 @@ export default function AdminUsersPage() {
 
     setUsers(data ?? [])
     setLoading(false)
-  }
+  }, [])
 
-  useEffect(() => { loadUsers() }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadUsers() }, [loadUsers])
 
   async function updateRole(userId: string, role: UserRole) {
     const { error } = await supabase.from('profiles').update({ role }).eq('id', userId)

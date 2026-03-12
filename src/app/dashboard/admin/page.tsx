@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { PRICE_PER_POINT } from '@/lib/constants'
@@ -20,42 +20,42 @@ interface DashboardStats {
   totalPoints: number
 }
 
+const supabase = createClient()
+
 export default function AdminDashboardPage() {
   const { profile } = useAuth()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
-  useEffect(() => {
-    async function load() {
-      const [total, newT, inProg, waitQA, approved, published, contribs, points] = await Promise.all([
-        supabase.from('tasks').select('id', { count: 'exact', head: true }),
-        supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'new'),
-        supabase.from('tasks').select('id', { count: 'exact', head: true }).in('status', ['claimed', 'in_progress']),
-        supabase.from('tasks').select('id', { count: 'exact', head: true }).in('status', ['submitted', 'qa_review']),
-        supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
-        supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'published'),
-        supabase.from('profiles').select('id', { count: 'exact', head: true }).neq('role', 'admin'),
-        supabase.from('profiles').select('total_points').neq('role', 'admin'),
-      ])
+  const load = useCallback(async () => {
+    const [total, newT, inProg, waitQA, approved, published, contribs, points] = await Promise.all([
+      supabase.from('tasks').select('id', { count: 'exact', head: true }),
+      supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'new'),
+      supabase.from('tasks').select('id', { count: 'exact', head: true }).in('status', ['claimed', 'in_progress']),
+      supabase.from('tasks').select('id', { count: 'exact', head: true }).in('status', ['submitted', 'qa_review']),
+      supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'approved'),
+      supabase.from('tasks').select('id', { count: 'exact', head: true }).eq('status', 'published'),
+      supabase.from('profiles').select('id', { count: 'exact', head: true }).neq('role', 'admin'),
+      supabase.from('profiles').select('total_points').neq('role', 'admin'),
+    ])
 
-      const totalPts = (points.data ?? []).reduce((sum: number, p: { total_points: number }) => sum + p.total_points, 0)
+    const totalPts = (points.data ?? []).reduce((sum: number, p: { total_points: number }) => sum + p.total_points, 0)
 
-      setStats({
-        totalTasks: total.count ?? 0,
-        newTasks: newT.count ?? 0,
-        inProgress: inProg.count ?? 0,
-        waitingQA: waitQA.count ?? 0,
-        approved: approved.count ?? 0,
-        published: published.count ?? 0,
-        totalContributors: contribs.count ?? 0,
-        totalPoints: totalPts,
-      })
-      setLoading(false)
-    }
-
-    load()
+    setStats({
+      totalTasks: total.count ?? 0,
+      newTasks: newT.count ?? 0,
+      inProgress: inProg.count ?? 0,
+      waitingQA: waitQA.count ?? 0,
+      approved: approved.count ?? 0,
+      published: published.count ?? 0,
+      totalContributors: contribs.count ?? 0,
+      totalPoints: totalPts,
+    })
+    setLoading(false)
   }, [])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { load() }, [load])
 
   if (!profile || profile.role !== 'admin') {
     return <p className="text-white/50">Bạn không có quyền truy cập.</p>

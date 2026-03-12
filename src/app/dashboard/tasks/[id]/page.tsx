@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
@@ -14,6 +14,8 @@ import {
 import type { Task } from '@/types'
 import { ArrowLeft, Clock, ExternalLink, User } from 'lucide-react'
 
+const supabase = createClient()
+
 export default function TaskDetailPage() {
   const { id } = useParams<{ id: string }>()
   const { profile } = useAuth()
@@ -21,34 +23,32 @@ export default function TaskDetailPage() {
   const [claimedCount, setClaimedCount] = useState(0)
   const [loading, setLoading] = useState(true)
   const [claiming, setClaiming] = useState(false)
-  const supabase = createClient()
   const router = useRouter()
 
-  useEffect(() => {
-    async function load() {
-      const { data: taskData } = await supabase
+  const load = useCallback(async () => {
+    const { data: taskData } = await supabase
+      .from('tasks')
+      .select('*, assignee:profiles!tasks_assignee_id_fkey(name)')
+      .eq('id', id)
+      .single()
+
+    setTask(taskData)
+
+    if (profile) {
+      const { count } = await supabase
         .from('tasks')
-        .select('*, assignee:profiles!tasks_assignee_id_fkey(name)')
-        .eq('id', id)
-        .single()
+        .select('id', { count: 'exact', head: true })
+        .eq('assignee_id', profile.id)
+        .in('status', ['claimed', 'in_progress', 'submitted'])
 
-      setTask(taskData)
-
-      if (profile) {
-        const { count } = await supabase
-          .from('tasks')
-          .select('id', { count: 'exact', head: true })
-          .eq('assignee_id', profile.id)
-          .in('status', ['claimed', 'in_progress', 'submitted'])
-
-        setClaimedCount(count ?? 0)
-      }
-
-      setLoading(false)
+      setClaimedCount(count ?? 0)
     }
 
-    load()
+    setLoading(false)
   }, [id, profile])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { load() }, [load])
 
   async function handleClaim() {
     if (!profile || !task) return

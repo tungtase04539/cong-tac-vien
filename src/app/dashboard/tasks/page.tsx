@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/badge'
@@ -8,29 +8,29 @@ import { DIFFICULTY_LABELS, DIFFICULTY_COLORS, STATUS_LABELS, STATUS_COLORS, LOC
 import type { Task } from '@/types'
 import { Clock, ExternalLink } from 'lucide-react'
 
+const supabase = createClient()
+
 export default function TaskMarketplacePage() {
   const [tasks, setTasks] = useState<Task[]>([])
   const [filter, setFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
-  const supabase = createClient()
 
-  useEffect(() => {
-    async function loadTasks() {
-      let query = supabase.from('tasks').select('*').order('created_at', { ascending: false })
+  const loadTasks = useCallback(async () => {
+    let query = supabase.from('tasks').select('*').order('created_at', { ascending: false })
 
-      if (filter === 'available') {
-        query = query.eq('status', 'new')
-      } else if (filter !== 'all') {
-        query = query.eq('difficulty', filter)
-      }
-
-      const { data } = await query
-      setTasks(data ?? [])
-      setLoading(false)
+    if (filter === 'available') {
+      query = query.eq('status', 'new')
+    } else if (filter !== 'all') {
+      query = query.eq('difficulty', filter)
     }
 
-    loadTasks()
+    const { data } = await query
+    setTasks(data ?? [])
+    setLoading(false)
   }, [filter])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadTasks() }, [loadTasks])
 
   return (
     <div>

@@ -2,7 +2,6 @@
 
 import { useRouter } from 'next/navigation'
 import { LogOut, User } from 'lucide-react'
-import { Button } from '@/components/ui/button'
 import { Avatar, AvatarFallback } from '@/components/ui/avatar'
 import {
   DropdownMenu, DropdownMenuContent, DropdownMenuItem,
@@ -34,14 +33,12 @@ export function Header() {
               </p>
             </div>
             <DropdownMenu>
-              <DropdownMenuTrigger asChild>
-                <div role="button" tabIndex={0} className="relative h-9 w-9 rounded-full cursor-pointer ring-2 ring-violet-500/50 hover:ring-violet-400 transition-all">
-                  <Avatar className="h-9 w-9">
-                    <AvatarFallback className="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold">
-                      {profile.name.charAt(0).toUpperCase()}
-                    </AvatarFallback>
-                  </Avatar>
-                </div>
+              <DropdownMenuTrigger className="relative h-9 w-9 rounded-full cursor-pointer ring-2 ring-violet-500/50 hover:ring-violet-400 transition-all outline-none">
+                <Avatar className="h-9 w-9">
+                  <AvatarFallback className="bg-gradient-to-br from-violet-500 to-fuchsia-500 text-white font-semibold">
+                    {profile.name.charAt(0).toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="glass-card border-white/20">
                 <DropdownMenuItem onClick={() => router.push('/dashboard/profile')} className="text-white/80 hover:text-white focus:text-white focus:bg-white/10">

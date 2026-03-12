@@ -1,40 +1,40 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { ClipboardList, FileCheck, Trophy, Wallet } from 'lucide-react'
 
+const supabase = createClient()
+
 export default function DashboardPage() {
   const { profile } = useAuth()
   const [stats, setStats] = useState({ myTasks: 0, submitted: 0, approved: 0 })
-  const supabase = createClient()
 
-  useEffect(() => {
+  const loadStats = useCallback(async () => {
     if (!profile) return
 
-    async function loadStats() {
-      const [myTasks, submitted, approved] = await Promise.all([
-        supabase.from('tasks').select('id', { count: 'exact', head: true })
-          .eq('assignee_id', profile!.id)
-          .in('status', ['claimed', 'in_progress']),
-        supabase.from('tasks').select('id', { count: 'exact', head: true })
-          .eq('assignee_id', profile!.id)
-          .eq('status', 'submitted'),
-        supabase.from('tasks').select('id', { count: 'exact', head: true })
-          .eq('assignee_id', profile!.id)
-          .in('status', ['approved', 'published', 'paid']),
-      ])
+    const [myTasks, submitted, approved] = await Promise.all([
+      supabase.from('tasks').select('id', { count: 'exact', head: true })
+        .eq('assignee_id', profile.id)
+        .in('status', ['claimed', 'in_progress']),
+      supabase.from('tasks').select('id', { count: 'exact', head: true })
+        .eq('assignee_id', profile.id)
+        .eq('status', 'submitted'),
+      supabase.from('tasks').select('id', { count: 'exact', head: true })
+        .eq('assignee_id', profile.id)
+        .in('status', ['approved', 'published', 'paid']),
+    ])
 
-      setStats({
-        myTasks: myTasks.count ?? 0,
-        submitted: submitted.count ?? 0,
-        approved: approved.count ?? 0,
-      })
-    }
-
-    loadStats()
+    setStats({
+      myTasks: myTasks.count ?? 0,
+      submitted: submitted.count ?? 0,
+      approved: approved.count ?? 0,
+    })
   }, [profile])
+
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadStats() }, [loadStats])
 
   if (!profile) return null
 

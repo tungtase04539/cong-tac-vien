@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
@@ -15,6 +15,8 @@ import {
 } from '@/lib/constants'
 import type { Task, TaskDifficulty } from '@/types'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
+
+const supabase = createClient()
 
 export default function AdminTasksPage() {
   const { profile } = useAuth()
@@ -31,9 +33,7 @@ export default function AdminTasksPage() {
   const [difficulty, setDifficulty] = useState<TaskDifficulty>('medium')
   const [deadline, setDeadline] = useState('')
 
-  const supabase = createClient()
-
-  async function loadTasks() {
+  const loadTasks = useCallback(async () => {
     const { data } = await supabase
       .from('tasks')
       .select('*, assignee:profiles!tasks_assignee_id_fkey(name)')
@@ -41,9 +41,10 @@ export default function AdminTasksPage() {
 
     setTasks(data ?? [])
     setLoading(false)
-  }
+  }, [])
 
-  useEffect(() => { loadTasks() }, [])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadTasks() }, [loadTasks])
 
   function resetForm() {
     setTitle('')

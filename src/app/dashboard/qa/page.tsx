@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -22,7 +22,7 @@ export default function QAPage() {
   const [qaNotes, setQaNotes] = useState('')
   const [saving, setSaving] = useState(false)
 
-  async function loadSubmissions() {
+  const loadSubmissions = useCallback(async () => {
     const { data } = await supabase
       .from('submissions')
       .select('*, task:tasks(title, difficulty, points, status, id), user:profiles!submissions_user_id_fkey(name)')
@@ -35,9 +35,10 @@ export default function QAPage() {
 
     setSubmissions(filtered)
     setLoading(false)
-  }
+  }, [])
 
-  useEffect(() => { loadSubmissions() }, [profile])
+  // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
+  useEffect(() => { loadSubmissions() }, [loadSubmissions])
 
   async function handleReview(sub: Submission, action: 'approve' | 'reject' | 'revision') {
     if (!profile) return

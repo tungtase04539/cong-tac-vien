@@ -3,37 +3,33 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
-import { Badge } from '@/components/ui/badge'
+import { Card, CardContent } from '@/components/ui/card'
 import { Button } from '@/components/ui/button'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
 import { toast } from 'sonner'
 import { DIFFICULTY_LABELS, QA_SCORE_LABELS, QUALITY_MULTIPLIER, QA_POINTS } from '@/lib/constants'
 import type { QAScore, Submission, TaskDifficulty } from '@/types'
 import { ExternalLink, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
 
+const supabase = createClient()
+
 export default function QAPage() {
   const { profile } = useAuth()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
-  const [reviewingSub, setReviewingSub] = useState<Submission | null>(null)
+  const [reviewingId, setReviewingId] = useState<string | null>(null)
   const [qaScore, setQaScore] = useState<QAScore>('good')
   const [qaNotes, setQaNotes] = useState('')
   const [saving, setSaving] = useState(false)
-  const supabase = createClient()
 
   async function loadSubmissions() {
     const { data } = await supabase
       .from('submissions')
       .select('*, task:tasks(title, difficulty, points, status, id), user:profiles!submissions_user_id_fkey(name)')
-      .or('task.status.eq.submitted,task.status.eq.qa_review')
       .is('qa_score', null)
       .order('created_at', { ascending: true })
 
-    // Filter submissions where task status is submitted or qa_review
     const filtered = (data ?? []).filter((s: Submission & { task: { status: string } }) =>
       s.task && ['submitted', 'qa_review'].includes((s.task as unknown as { status: string }).status)
     )
@@ -44,23 +40,21 @@ export default function QAPage() {
 
   useEffect(() => { loadSubmissions() }, [profile])
 
-  async function handleReview(action: 'approve' | 'reject' | 'revision') {
-    if (!reviewingSub || !profile) return
+  async function handleReview(sub: Submission, action: 'approve' | 'reject' | 'revision') {
+    if (!profile) return
     setSaving(true)
 
-    const task = reviewingSub.task as unknown as { id: string; difficulty: TaskDifficulty; points: number }
+    const task = sub.task as unknown as { id: string; difficulty: TaskDifficulty; points: number }
 
-    // Update submission
     await supabase.from('submissions').update({
       qa_score: action === 'revision' ? null : qaScore,
       qa_notes: qaNotes,
       reviewed_by: profile.id,
       revision_count: action === 'revision'
-        ? (reviewingSub.revision_count + 1)
-        : reviewingSub.revision_count,
-    }).eq('id', reviewingSub.id)
+        ? (sub.revision_count + 1)
+        : sub.revision_count,
+    }).eq('id', sub.id)
 
-    // Update task status
     let newStatus: string
     if (action === 'approve') newStatus = 'approved'
     else if (action === 'reject') newStatus = 'rejected'
@@ -68,25 +62,22 @@ export default function QAPage() {
 
     await supabase.from('tasks').update({ status: newStatus }).eq('id', task.id)
 
-    // If approved, add points to localizer
     if (action === 'approve') {
       const multiplier = QUALITY_MULTIPLIER[qaScore]
       const earnedPoints = Math.round(task.points * multiplier)
 
-      // Update localizer points
       const { data: localizer } = await supabase
         .from('profiles')
         .select('total_points')
-        .eq('id', reviewingSub.user_id)
+        .eq('id', sub.user_id)
         .single()
 
       if (localizer) {
         await supabase.from('profiles').update({
           total_points: localizer.total_points + earnedPoints,
-        }).eq('id', reviewingSub.user_id)
+        }).eq('id', sub.user_id)
       }
 
-      // Add QA points to reviewer
       const qaPoints = QA_POINTS[task.difficulty] || 2
       await supabase.from('profiles').update({
         total_points: profile.total_points + qaPoints,
@@ -99,7 +90,7 @@ export default function QAPage() {
       'Đã yêu cầu sửa lại.'
     )
 
-    setReviewingSub(null)
+    setReviewingId(null)
     setQaScore('good')
     setQaNotes('')
     setSaving(false)
@@ -123,6 +114,7 @@ export default function QAPage() {
           {submissions.map((sub) => {
             const task = sub.task as unknown as { title: string; difficulty: TaskDifficulty; points: number }
             const user = sub.user as unknown as { name: string }
+            const isReviewing = reviewingId === sub.id
             return (
               <Card key={sub.id}>
                 <CardContent className="pt-4">
@@ -147,69 +139,80 @@ export default function QAPage() {
                       )}
                     </div>
 
-                    <Dialog open={reviewingSub?.id === sub.id} onOpenChange={(open) => {
-                      if (!open) setReviewingSub(null)
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" onClick={() => setReviewingSub(sub)}>Review</Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Review: {task?.title}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label>Đánh giá chất lượng</Label>
-                            <Select value={qaScore} onValueChange={(v) => setQaScore(v as QAScore)}>
-                              <SelectTrigger>
-                                <SelectValue />
-                              </SelectTrigger>
-                              <SelectContent>
-                                {Object.entries(QA_SCORE_LABELS).map(([key, label]) => (
-                                  <SelectItem key={key} value={key}>
-                                    {label} (x{QUALITY_MULTIPLIER[key as QAScore]})
-                                  </SelectItem>
-                                ))}
-                              </SelectContent>
-                            </Select>
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Ghi chú QA</Label>
-                            <Textarea
-                              value={qaNotes}
-                              onChange={(e) => setQaNotes(e.target.value)}
-                              placeholder="Nhận xét về chất lượng bài..."
-                            />
-                          </div>
-                          <div className="flex gap-2">
-                            <Button
-                              onClick={() => handleReview('approve')}
-                              disabled={saving}
-                              className="flex-1"
-                            >
-                              <CheckCircle className="h-4 w-4 mr-1" /> Duyệt
-                            </Button>
-                            <Button
-                              variant="outline"
-                              onClick={() => handleReview('revision')}
-                              disabled={saving}
-                              className="flex-1"
-                            >
-                              <RotateCcw className="h-4 w-4 mr-1" /> Sửa lại
-                            </Button>
-                            <Button
-                              variant="destructive"
-                              onClick={() => handleReview('reject')}
-                              disabled={saving}
-                              className="flex-1"
-                            >
-                              <XCircle className="h-4 w-4 mr-1" /> Từ chối
-                            </Button>
-                          </div>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                    {!isReviewing && (
+                      <Button size="sm" onClick={() => {
+                        setReviewingId(sub.id)
+                        setQaScore('good')
+                        setQaNotes('')
+                      }}>
+                        Review
+                      </Button>
+                    )}
                   </div>
+
+                  {isReviewing && (
+                    <div className="mt-4 border-t pt-4 space-y-3">
+                      <div className="flex items-center justify-between">
+                        <p className="font-medium text-sm">Review: {task?.title}</p>
+                        <button
+                          className="text-gray-400 hover:text-gray-600 text-lg"
+                          onClick={() => setReviewingId(null)}
+                        >
+                          ×
+                        </button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Đánh giá chất lượng</Label>
+                        <select
+                          className="w-full border rounded-md px-3 py-2 text-sm"
+                          value={qaScore}
+                          onChange={(e) => setQaScore(e.target.value as QAScore)}
+                        >
+                          {Object.entries(QA_SCORE_LABELS).map(([key, label]) => (
+                            <option key={key} value={key}>
+                              {label} (x{QUALITY_MULTIPLIER[key as QAScore]})
+                            </option>
+                          ))}
+                        </select>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ghi chú QA</Label>
+                        <Textarea
+                          value={qaNotes}
+                          onChange={(e) => setQaNotes(e.target.value)}
+                          placeholder="Nhận xét về chất lượng bài..."
+                        />
+                      </div>
+                      <div className="flex gap-2">
+                        <Button
+                          onClick={() => handleReview(sub, 'approve')}
+                          disabled={saving}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          <CheckCircle className="h-4 w-4 mr-1" /> Duyệt
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={() => handleReview(sub, 'revision')}
+                          disabled={saving}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          <RotateCcw className="h-4 w-4 mr-1" /> Sửa lại
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          onClick={() => handleReview(sub, 'reject')}
+                          disabled={saving}
+                          className="flex-1"
+                          size="sm"
+                        >
+                          <XCircle className="h-4 w-4 mr-1" /> Từ chối
+                        </Button>
+                      </div>
+                    </div>
+                  )}
                 </CardContent>
               </Card>
             )

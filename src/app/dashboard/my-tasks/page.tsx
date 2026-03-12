@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useCallback, useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card'
@@ -9,11 +9,13 @@ import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
 import { Label } from '@/components/ui/label'
 import { Textarea } from '@/components/ui/textarea'
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from '@/components/ui/dialog'
+import { Separator } from '@/components/ui/separator'
 import { toast } from 'sonner'
 import { DIFFICULTY_LABELS, DIFFICULTY_COLORS, STATUS_LABELS, STATUS_COLORS } from '@/lib/constants'
 import type { Task } from '@/types'
-import { Send, ExternalLink } from 'lucide-react'
+import { Send, ExternalLink, X } from 'lucide-react'
+
+const supabase = createClient()
 
 export default function MyTasksPage() {
   const { profile } = useAuth()
@@ -23,10 +25,10 @@ export default function MyTasksPage() {
   const [contentLink, setContentLink] = useState('')
   const [notes, setNotes] = useState('')
   const [submitting, setSubmitting] = useState(false)
-  const supabase = createClient()
 
-  async function loadTasks() {
-    if (!profile) return
+  const loadTasks = useCallback(async () => {
+    if (!profile?.id) return
+    setLoading(true)
     const { data } = await supabase
       .from('tasks')
       .select('*')
@@ -36,15 +38,16 @@ export default function MyTasksPage() {
 
     setTasks(data ?? [])
     setLoading(false)
-  }
+  }, [profile?.id])
 
-  useEffect(() => { loadTasks() }, [profile])
+  useEffect(() => {
+    loadTasks()
+  }, [loadTasks])
 
   async function handleSubmit(taskId: string) {
     if (!profile || !contentLink.trim()) return
     setSubmitting(true)
 
-    // Create submission
     const { error: subError } = await supabase.from('submissions').insert({
       task_id: taskId,
       user_id: profile.id,
@@ -58,7 +61,6 @@ export default function MyTasksPage() {
       return
     }
 
-    // Update task status
     await supabase.from('tasks').update({
       status: 'submitted',
       submitted_at: new Date().toISOString(),
@@ -78,10 +80,10 @@ export default function MyTasksPage() {
     loadTasks()
   }
 
-  if (!profile) return null
+  if (!profile) return <p className="text-gray-500">Đang tải...</p>
 
   return (
-    <div>
+    <div className="max-w-3xl">
       <h1 className="text-2xl font-bold mb-6">Task của tôi</h1>
 
       {loading ? (
@@ -127,48 +129,53 @@ export default function MyTasksPage() {
                     </Button>
                   )}
 
-                  {['claimed', 'in_progress', 'revision_required'].includes(task.status) && (
-                    <Dialog open={submitTaskId === task.id} onOpenChange={(open) => {
-                      if (!open) setSubmitTaskId(null)
-                    }}>
-                      <DialogTrigger asChild>
-                        <Button size="sm" onClick={() => setSubmitTaskId(task.id)}>
-                          <Send className="h-3 w-3 mr-1" /> Nộp bài
-                        </Button>
-                      </DialogTrigger>
-                      <DialogContent>
-                        <DialogHeader>
-                          <DialogTitle>Nộp bài: {task.title}</DialogTitle>
-                        </DialogHeader>
-                        <div className="space-y-4">
-                          <div className="space-y-2">
-                            <Label>Link nội dung</Label>
-                            <Input
-                              placeholder="https://..."
-                              value={contentLink}
-                              onChange={(e) => setContentLink(e.target.value)}
-                            />
-                          </div>
-                          <div className="space-y-2">
-                            <Label>Ghi chú</Label>
-                            <Textarea
-                              placeholder="Ghi chú thêm (nếu có)"
-                              value={notes}
-                              onChange={(e) => setNotes(e.target.value)}
-                            />
-                          </div>
-                          <Button
-                            onClick={() => handleSubmit(task.id)}
-                            disabled={submitting || !contentLink.trim()}
-                            className="w-full"
-                          >
-                            {submitting ? 'Đang nộp...' : 'Xác nhận nộp bài'}
-                          </Button>
-                        </div>
-                      </DialogContent>
-                    </Dialog>
+                  {['claimed', 'in_progress', 'revision_required'].includes(task.status) && submitTaskId !== task.id && (
+                    <Button size="sm" onClick={() => setSubmitTaskId(task.id)}>
+                      <Send className="h-3 w-3 mr-1" /> Nộp bài
+                    </Button>
                   )}
                 </div>
+
+                {submitTaskId === task.id && (
+                  <>
+                    <Separator className="my-4" />
+                    <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                      <div className="flex items-center justify-between">
+                        <h3 className="font-medium text-sm">Nộp bài: {task.title}</h3>
+                        <Button size="sm" variant="ghost" onClick={() => {
+                          setSubmitTaskId(null)
+                          setContentLink('')
+                          setNotes('')
+                        }}>
+                          <X className="h-4 w-4" />
+                        </Button>
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Link nội dung</Label>
+                        <Input
+                          placeholder="https://..."
+                          value={contentLink}
+                          onChange={(e) => setContentLink(e.target.value)}
+                        />
+                      </div>
+                      <div className="space-y-2">
+                        <Label>Ghi chú</Label>
+                        <Textarea
+                          placeholder="Ghi chú thêm (nếu có)"
+                          value={notes}
+                          onChange={(e) => setNotes(e.target.value)}
+                        />
+                      </div>
+                      <Button
+                        onClick={() => handleSubmit(task.id)}
+                        disabled={submitting || !contentLink.trim()}
+                        className="w-full"
+                      >
+                        {submitting ? 'Đang nộp...' : 'Xác nhận nộp bài'}
+                      </Button>
+                    </div>
+                  </>
+                )}
               </CardContent>
             </Card>
           ))}

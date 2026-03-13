@@ -1,7 +1,6 @@
 'use client'
 
-import { useState, useEffect, useCallback, useMemo } from 'react'
-import { createClient } from '@/lib/supabase/client'
+import { useState, useEffect, useCallback } from 'react'
 import { toast } from 'sonner'
 import type { WeChatArticle, WeChatAccount } from '@/types'
 
@@ -10,7 +9,6 @@ interface ArticlesTabProps {
 }
 
 export function ArticlesTab({ accounts }: ArticlesTabProps) {
-  const supabase = useMemo(() => createClient(), [])
   const [articles, setArticles] = useState<WeChatArticle[]>([])
   const [loading, setLoading] = useState(true)
   const [total, setTotal] = useState(0)
@@ -46,9 +44,8 @@ export function ArticlesTab({ accounts }: ArticlesTabProps) {
     } finally {
       setLoading(false)
     }
-  }, [supabase, page, search, selectedAccountId])
+  }, [page, search, selectedAccountId])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadArticles() }, [loadArticles])
 
   function handleSearch(e: React.FormEvent) {

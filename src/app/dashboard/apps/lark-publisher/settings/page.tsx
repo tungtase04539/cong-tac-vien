@@ -30,12 +30,14 @@ export default function LarkPublisherSettingsPage() {
 
   useEffect(() => {
     if (settings) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setLarkAppId(settings.lark_app_id ?? '')
       setLarkAppSecret(settings.lark_app_secret ?? '')
       setLarkSpaceId(settings.lark_space_id ?? '')
       setAiProvider(settings.ai_provider ?? 'gemini')
       setAiApiKey(settings.ai_api_key ?? '')
       setAiModel(settings.ai_model ?? '')
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [settings])
 

@@ -14,8 +14,10 @@ export default function WeChatCrawlerSettingsPage() {
 
   useEffect(() => {
     if (settings) {
+      /* eslint-disable react-hooks/set-state-in-effect */
       setWeweRssUrl(settings.wewe_rss_url ?? '')
       setWeweRssAuthCode(settings.wewe_rss_auth_code ?? '')
+      /* eslint-enable react-hooks/set-state-in-effect */
     }
   }, [settings])
 

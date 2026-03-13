@@ -28,9 +28,9 @@ export function useAppSettings<T extends AppName>(appName: T) {
       .single()
     setSettings((data?.settings as SettingsMap[T]) ?? null)
     setLoading(false)
-  }, [supabase, profile?.id, appName])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, appName])
 
-  // eslint-disable-next-line react-hooks/set-state-in-effect
   useEffect(() => { loadSettings() }, [loadSettings])
 
   const saveSettings = useCallback(async (newSettings: SettingsMap[T]) => {
@@ -47,7 +47,8 @@ export function useAppSettings<T extends AppName>(appName: T) {
     if (!error) setSettings(newSettings)
     setSaving(false)
     return error
-  }, [supabase, profile?.id, appName])
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [profile, appName])
 
   return { settings, loading, saving, saveSettings, reload: loadSettings }
 }

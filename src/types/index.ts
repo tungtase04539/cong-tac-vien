@@ -80,3 +80,77 @@ export interface ActivityLog {
   metadata: Record<string, unknown>
   created_at: string
 }
+
+// ==================== Apps Types ====================
+
+export interface UserAppSettings {
+  id: string
+  user_id: string
+  app_name: 'lark-publisher' | 'wechat-crawler'
+  settings: LarkPublisherSettings | WeChatCrawlerSettings
+  created_at: string
+  updated_at: string
+}
+
+export interface LarkPublisherSettings {
+  lark_app_id?: string
+  lark_app_secret?: string
+  lark_space_id?: string
+  ai_provider?: 'gemini' | 'openai' | 'anthropic'
+  ai_api_key?: string
+  ai_model?: string
+}
+
+export interface WeChatCrawlerSettings {
+  wewe_rss_url?: string
+  wewe_rss_auth_code?: string
+}
+
+export interface WeChatAccount {
+  id: string
+  user_id: string
+  account_name: string
+  feed_id: string | null
+  feed_url: string | null
+  description: string | null
+  avatar_url: string | null
+  article_count: number
+  last_synced_at: string | null
+  is_active: boolean
+  created_at: string
+}
+
+export interface WeChatArticle {
+  id: string
+  user_id: string
+  account_id: string
+  title: string
+  author: string | null
+  url: string | null
+  guid: string | null
+  content: string | null
+  content_html: string | null
+  summary: string | null
+  ai_summary: string | null
+  cover_image: string | null
+  images: string[]
+  word_count: number
+  tags: string[]
+  published_at: string | null
+  created_at: string
+  account?: WeChatAccount
+}
+
+export interface WeChatSyncHistory {
+  id: string
+  user_id: string
+  account_id: string | null
+  sync_type: string
+  status: 'running' | 'success' | 'failed' | 'partial'
+  articles_fetched: number
+  articles_new: number
+  error_message: string | null
+  started_at: string
+  completed_at: string | null
+  duration_seconds: number | null
+}

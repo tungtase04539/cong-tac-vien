@@ -4,7 +4,8 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import {
   LayoutDashboard, ShoppingBag, ClipboardList, FileCheck,
-  Wallet, Trophy, User, Settings, Users, CreditCard, Shield
+  Wallet, Trophy, User, Settings, Users, CreditCard, Shield,
+  BookOpen, Globe
 } from 'lucide-react'
 import { cn } from '@/lib/utils'
 import type { UserRole } from '@/types'
@@ -16,6 +17,11 @@ interface NavItem {
   icon: React.ElementType
   roles?: UserRole[]
 }
+
+const appItems: NavItem[] = [
+  { href: '/dashboard/apps/lark-publisher', label: 'Lark Publisher', icon: BookOpen },
+  { href: '/dashboard/apps/wechat-crawler', label: 'WeChat Crawler', icon: Globe },
+]
 
 const navItems: NavItem[] = [
   { href: '/dashboard', label: 'Trang chủ', icon: LayoutDashboard },
@@ -69,6 +75,26 @@ export function Sidebar({ userRole }: SidebarProps) {
               )}
             >
               <item.icon className={cn('h-4 w-4', isActive && 'text-violet-400')} />
+              {item.label}
+            </Link>
+          )
+        })}
+
+        {/* Apps Section */}
+        <p className="px-4 pt-6 pb-2 text-xs font-semibold text-white/30 uppercase tracking-wider">
+          Ung dung
+        </p>
+        {appItems.map((item) => {
+          const Icon = item.icon
+          const isActive = pathname.startsWith(item.href)
+          return (
+            <Link key={item.href} href={item.href}
+              className={`flex items-center gap-3 px-4 py-2.5 text-sm rounded-lg mx-2 transition-all duration-200 ${
+                isActive
+                  ? 'bg-white/15 text-white shadow-lg shadow-violet-500/10'
+                  : 'text-white/60 hover:bg-white/10 hover:text-white'
+              }`}>
+              <Icon className={`h-4 w-4 ${isActive ? 'text-violet-400' : ''}`} />
               {item.label}
             </Link>
           )

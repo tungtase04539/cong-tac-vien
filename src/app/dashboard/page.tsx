@@ -1,13 +1,12 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { ClipboardList, FileCheck, Trophy, Wallet } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function DashboardPage() {
+  const supabase = useMemo(() => createClient(), [])
   const { profile } = useAuth()
   const [stats, setStats] = useState({ myTasks: 0, submitted: 0, approved: 0 })
 
@@ -31,7 +30,7 @@ export default function DashboardPage() {
       submitted: submitted.count ?? 0,
       approved: approved.count ?? 0,
     })
-  }, [profile])
+  }, [profile, supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { loadStats() }, [loadStats])

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
@@ -16,9 +16,8 @@ import {
 import type { Task, TaskDifficulty } from '@/types'
 import { Plus, Pencil, Trash2, X } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function AdminTasksPage() {
+  const supabase = useMemo(() => createClient(), [])
   const { profile } = useAuth()
   const [tasks, setTasks] = useState<Task[]>([])
   const [loading, setLoading] = useState(true)
@@ -41,7 +40,7 @@ export default function AdminTasksPage() {
 
     setTasks(data ?? [])
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { loadTasks() }, [loadTasks])

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Button } from '@/components/ui/button'
@@ -11,9 +11,8 @@ import { DIFFICULTY_LABELS, QA_SCORE_LABELS, QUALITY_MULTIPLIER, QA_POINTS } fro
 import type { QAScore, Submission, TaskDifficulty } from '@/types'
 import { ExternalLink, CheckCircle, XCircle, RotateCcw } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function QAPage() {
+  const supabase = useMemo(() => createClient(), [])
   const { profile } = useAuth()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
@@ -35,7 +34,7 @@ export default function QAPage() {
 
     setSubmissions(filtered)
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { loadSubmissions() }, [loadSubmissions])

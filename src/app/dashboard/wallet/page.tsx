@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
@@ -8,9 +8,8 @@ import { PRICE_PER_POINT, LEVEL_MULTIPLIER } from '@/lib/constants'
 import type { Payment } from '@/types'
 import { Wallet, TrendingUp, CreditCard } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function WalletPage() {
+  const supabase = useMemo(() => createClient(), [])
   const { profile } = useAuth()
   const [payments, setPayments] = useState<Payment[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,7 +25,7 @@ export default function WalletPage() {
 
     setPayments(data ?? [])
     setLoading(false)
-  }, [profile])
+  }, [profile, supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { loadPayments() }, [loadPayments])

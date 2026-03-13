@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { PRICE_PER_POINT } from '@/lib/constants'
@@ -20,9 +20,8 @@ interface DashboardStats {
   totalPoints: number
 }
 
-const supabase = createClient()
-
 export default function AdminDashboardPage() {
+  const supabase = useMemo(() => createClient(), [])
   const { profile } = useAuth()
   const [stats, setStats] = useState<DashboardStats | null>(null)
   const [loading, setLoading] = useState(true)
@@ -52,7 +51,7 @@ export default function AdminDashboardPage() {
       totalPoints: totalPts,
     })
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { load() }, [load])

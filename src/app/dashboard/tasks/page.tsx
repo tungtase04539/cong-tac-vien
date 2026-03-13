@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
 import { createClient } from '@/lib/supabase/client'
 import { Badge } from '@/components/ui/badge'
@@ -8,9 +8,8 @@ import { DIFFICULTY_LABELS, DIFFICULTY_COLORS, STATUS_LABELS, STATUS_COLORS, LOC
 import type { Task } from '@/types'
 import { Clock, ExternalLink } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function TaskMarketplacePage() {
+  const supabase = useMemo(() => createClient(), [])
   const [tasks, setTasks] = useState<Task[]>([])
   const [filter, setFilter] = useState<string>('all')
   const [loading, setLoading] = useState(true)
@@ -27,7 +26,7 @@ export default function TaskMarketplacePage() {
     const { data } = await query
     setTasks(data ?? [])
     setLoading(false)
-  }, [filter])
+  }, [filter, supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { loadTasks() }, [loadTasks])

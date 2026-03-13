@@ -1,14 +1,13 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ROLE_LABELS, LEVEL_LABELS } from '@/lib/constants'
 import type { Profile } from '@/types'
 import { Trophy, Medal, Award } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function LeaderboardPage() {
+  const supabase = useMemo(() => createClient(), [])
   const [topPoints, setTopPoints] = useState<Profile[]>([])
   const [topQA, setTopQA] = useState<Profile[]>([])
   const [loading, setLoading] = useState(true)
@@ -29,7 +28,7 @@ export default function LeaderboardPage() {
     setTopPoints(pointsRes.data ?? [])
     setTopQA(qaRes.data ?? [])
     setLoading(false)
-  }, [])
+  }, [supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { load() }, [load])

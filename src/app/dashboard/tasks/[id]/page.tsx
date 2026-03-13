@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
@@ -14,9 +14,8 @@ import {
 import type { Task } from '@/types'
 import { ArrowLeft, Clock, ExternalLink, User } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function TaskDetailPage() {
+  const supabase = useMemo(() => createClient(), [])
   const { id } = useParams<{ id: string }>()
   const { profile } = useAuth()
   const [task, setTask] = useState<Task | null>(null)
@@ -45,7 +44,7 @@ export default function TaskDetailPage() {
     }
 
     setLoading(false)
-  }, [id, profile])
+  }, [id, profile, supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { load() }, [load])

@@ -1,6 +1,6 @@
 'use client'
 
-import { useCallback, useEffect, useState } from 'react'
+import { useCallback, useEffect, useMemo, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { useAuth } from '@/hooks/use-auth'
 import { Badge } from '@/components/ui/badge'
@@ -8,9 +8,8 @@ import { QA_SCORE_LABELS, QUALITY_MULTIPLIER } from '@/lib/constants'
 import type { Submission } from '@/types'
 import { ExternalLink } from 'lucide-react'
 
-const supabase = createClient()
-
 export default function SubmissionsPage() {
+  const supabase = useMemo(() => createClient(), [])
   const { profile } = useAuth()
   const [submissions, setSubmissions] = useState<Submission[]>([])
   const [loading, setLoading] = useState(true)
@@ -26,7 +25,7 @@ export default function SubmissionsPage() {
 
     setSubmissions(data ?? [])
     setLoading(false)
-  }, [profile])
+  }, [profile, supabase])
 
   // eslint-disable-next-line react-hooks/set-state-in-effect -- async data fetching pattern
   useEffect(() => { loadSubmissions() }, [loadSubmissions])
